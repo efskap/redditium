@@ -2,11 +2,33 @@ var newTab = function(url) {
     console.error("Unexpected error!")
 };
 
-// http://stackoverflow.com/a/26216955/765210
-window.addEventListener('click',function(e){
-  if(e.target.href!==undefined){
-    chrome.tabs.create({url:e.target.href})
-  }
+
+// BIG OL WORKAROUND for chrome opening tabs in non-incognito windows 
+// when the extension is used in an incognito window
+
+chrome.windows.getCurrent(function(w) {
+    if (w.incognito) {
+        // http://stackoverflow.com/a/26216955/765210
+        window.addEventListener('click', function(e) {
+            if (e.target.href !== undefined && e.which < 3) {
+                chrome.tabs.query({
+                    currentWindow: true,
+                    active: true
+                }, function(tabs) {
+                    var t = tabs[0];
+                    chrome.tabs.create({
+                        url: e.target.href,
+                        index: t.index + 1,
+                        active: e.which == 1,
+                        openerTabId: t.id
+                    });
+
+                });
+                e.preventDefault();
+
+            }
+        });
+    }
 });
 
 window.onload = function() {
@@ -46,10 +68,10 @@ window.onload = function() {
         posts.forEach(function(post) {
             html += '<div class="post">\n';
             html += ('  <div class="score">' + post.score + '</div>\n');
-            html += (' <div class="title"><a href="https://www.reddit.com' + post.permalink + '">'+ post.title + '</a></div>\n');
+            html += (' <div class="title"><a target="_blank" href="https://www.reddit.com' + post.permalink + '">' + post.title + '</a></div>\n');
             html += ('  <div class="meta">\n');
-            html += ('    <a href="https://www.reddit.com' + post.permalink + '">' + post.num_comments + ' comments</a>\n');
-            html += ('    submitted to <a href="https://www.reddit.com/r/'+post.subreddit+'" class="subreddit">' + post.subreddit + '</a>\n');
+            html += ('    <a target="_blank" href="https://www.reddit.com' + post.permalink + '">' + post.num_comments + ' comments</a>\n');
+            html += ('    submitted to <a href="https://www.reddit.com/r/' + post.subreddit + '" class="subreddit">' + post.subreddit + '</a>\n');
             html += ('    by <span>' + post.author + '</span>\n');
             created = new Date(post.created * 1000);
             html += ('    at <span class="created">' + created.toDateString() + '</span>\n');
