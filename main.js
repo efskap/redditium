@@ -107,7 +107,12 @@
               api_url = 'https://www.reddit.com/search.json?q=url:"' + video_id + '"+url:youtube.com';
           }
       }
-
+   if (domain == 'imgur.com') {
+          var img_id =  RegExp("imgur\.com\/([a-zA-Z0-9]{5,7})", "i").match(new_url);
+          if (img_id) {
+              api_url = 'https://www.reddit.com/search.json?q=url:"' + img_id + '"+url:imgur.com';
+          }
+      }
       res = jreq(api_url + '&limit=100', processData, onError);
 
       function processData(js) {
