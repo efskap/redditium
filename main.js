@@ -72,7 +72,7 @@
 
       l = children ? children.length : 0;
       chrome.browserAction.setBadgeBackgroundColor({
-      color: [0, 150, 255, l ? 255 : 75],
+      color: [l?0:70, l?150:110, l? 255: 130, 255],
        tabId: tab.id
         });
       text = '' + l
@@ -100,7 +100,7 @@
       var api_url = "https://www.reddit.com/api/info.json?url=" + encoded_url;
 
       /** custom handlers go here **/
-      
+
       if (domain == 'youtube.com') {
           var video_id = parse_youtube(new_url);
           if (video_id) {
@@ -108,7 +108,7 @@
           }
       }
    if (domain == 'imgur.com') {
-          var img_id =  RegExp("imgur\.com\/([a-zA-Z0-9]{5,7})(?:\.|$)", "i").exec(new_url);
+          var img_id = RegExp("imgur\.com\/(?:gallery/|a/)?([a-zA-Z0-9]{5,7})(?:\.|$)", "i").exec(new_url);
           if (img_id) {
               api_url = 'https://www.reddit.com/search.json?q=url:"' + img_id[1] + '"+url:imgur.com';
           }
