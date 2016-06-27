@@ -67,14 +67,24 @@
       }
   }
 
+  function parse_imgur(url) {
+      var regExp = RegExp("imgur\.com\/(?:gallery/|a/)?([a-zA-Z0-9]{5,7})(?:\.|$)", "i");
+      var id = regExp.exec(url);
+      if (id) {
+          return id[1];
+      } else {
+          return null;
+      }
+  }
+
   function updateTabBadge(tab) {
       children = urlData[tab.id]
 
       l = children ? children.length : 0;
       chrome.browserAction.setBadgeBackgroundColor({
-      color: [l?0:70, l?150:110, l? 255: 130, 255],
-       tabId: tab.id
-        });
+          color: [l ? 0 : 70, l ? 150 : 110, l ? 255 : 130, 255],
+          tabId: tab.id
+      });
       text = '' + l
       chrome.browserAction.setBadgeText({
           text: text,
@@ -107,12 +117,14 @@
               api_url = 'https://www.reddit.com/search.json?q=url:"' + video_id + '"+url:youtube.com';
           }
       }
-   if (domain == 'imgur.com') {
-          var img_id = RegExp("imgur\.com\/(?:gallery/|a/)?([a-zA-Z0-9]{5,7})(?:\.|$)", "i").exec(new_url);
+
+      if (domain == 'imgur.com') {
+          var img_id = parse_imgur(new_url);
           if (img_id) {
-              api_url = 'https://www.reddit.com/search.json?q=url:"' + img_id[1] + '"+url:imgur.com';
+              api_url = 'https://www.reddit.com/search.json?q=url:"' + img_id + '"+url:imgur.com';
           }
       }
+
       res = jreq(api_url + '&limit=100', processData, onError);
 
       function processData(js) {
@@ -120,7 +132,17 @@
               onError("Error, js kind is: " + js.kind);
               console.log("Error, js kind is: " + js.kind);
           }
-
+          // filter out any false matches caused by reddit's search being case insensitive
+          if (domain == 'imgur.com') {
+              js.data.children = js.data.children.filter(function(el) {
+                  var id = parse_imgur(el.data.url);
+                  if (id) {
+                      return id == img_id;
+                  } else {
+                      return false;
+                  }
+              });
+          }
           urlData[tab.id] = js.data.children;
           updateTabBadge(tab);
       }
@@ -150,9 +172,9 @@
   });
 
 
-     chrome.browserAction.setBadgeBackgroundColor({
+  chrome.browserAction.setBadgeBackgroundColor({
       color: [0, 150, 255, 75]
-        });
+  });
    // Called when the url of a tab changes.
   function checkForValidUrl(tabId, changeInfo, tab) {
       checkTabUpdate(tab);
