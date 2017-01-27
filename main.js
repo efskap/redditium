@@ -109,22 +109,24 @@
       var encoded_url = encodeURIComponent(new_url);
       var api_url = "https://www.reddit.com/api/info.json?url=" + encoded_url;
 
+      console.log("Redditium: URL = " + encoded_url);
       /** custom handlers go here **/
 
       if (domain == 'youtube.com') {
           var video_id = parse_youtube(new_url);
           if (video_id) {
-              api_url = 'https://www.reddit.com/search.json?q=url:"' + video_id + '"+url:youtube.com';
+            console.log("Redditium: Searching by YouTube ID " + video_id + " instead of URL.");
+              api_url = 'https://www.reddit.com/search.json?q=url:"' + video_id + '"+url:youtube.com+OR+url:youtu.be';
           }
       }
-
-      if (domain == 'imgur.com') {
+      else if (domain == 'imgur.com') {
           var img_id = parse_imgur(new_url);
           if (img_id) {
+            console.log("Redditium: Searching by Imgur ID " + img_id + " instead of URL.");
               api_url = 'https://www.reddit.com/search.json?q=url:"' + img_id + '"+url:imgur.com';
           }
       }
-
+      console.log("Redditium: Requesting " + api_url);
       res = jreq(api_url + '&limit=100', processData, onError);
 
       function processData(js) {

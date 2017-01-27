@@ -71,7 +71,7 @@ window.onload = function() {
             html += (' <div class="title"><a target="_blank" href="https://www.reddit.com' + post.permalink + '">' + post.title + '</a></div>\n');
             html += ('  <div class="meta">\n');
             html += ('    <a target="_blank" href="https://www.reddit.com' + post.permalink + '">' + post.num_comments + ' comments</a>\n');
-            html += ('    submitted to <a href="https://www.reddit.com/r/' + post.subreddit + '" class="subreddit">' + post.subreddit + '</a>\n');
+            html += ('    submitted to <a target="_blank" href="https://www.reddit.com/r/' + post.subreddit + '" class="subreddit">' + post.subreddit + '</a>\n');
             html += ('    by <span>' + post.author + '</span>\n');
             created = new Date(post.created * 1000);
             html += ('    at <span class="created">' + created.toDateString() + '</span>\n');
