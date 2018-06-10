@@ -1,21 +1,36 @@
 <html>
 <head>
 <style>
+
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 400;
+  src:url("OpenSans-Regular.ttf");
+}
+body.dark {
+    background: #262626;
+}
 body {
   min-width:600px;
   overflow-x:hidden;
   background: white;
+  font-size: 90%;
+  font-family: 'Open Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
+.dark .score {
+    color: #9bb2b2;
+}
 .score {
     float: left;
     color : #0E81E4;
-    font-size: 1.5em;
-    background: white;
+    font-size: 1.3em;
     min-width: 1.5em;
     text-align: center;
+    font-weight: bold;
     margin-right: 10px;
-    line-height:1.5em;
+    line-height:1.8em;
 }
 
 
@@ -32,7 +47,6 @@ body {
     /*border: solid gray 1px;*/
     padding: 3px;
     margin: 10px;
-    background: white;
 }
 
 .subreddit {
@@ -41,6 +55,9 @@ body {
 }
 a:hover{
     text-decoration: underline;
+}
+.dark a {
+    color : #87b3e2;
 }
 a {
     color : #428bca;
@@ -52,6 +69,13 @@ p{
     font-style:italic;
     text-align: center;
 }
+.dark .title a{
+    color:#b7b7b7;
+}
+.dark .title a:hover{
+    color:#808390;
+}
+
 .title a{
     color: #18476F;
 }

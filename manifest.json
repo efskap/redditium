@@ -1,5 +1,5 @@
 {
-"update_url": "https://clients2.google.com/service/update2/crx",
+    "update_url": "https://clients2.google.com/service/update2/crx",
 
     "background": {
         "persistent": true,
@@ -11,16 +11,21 @@
         "default_icon": "alien.png",
         "default_popup": "popup.html"
     },
+    "options_ui": {
+        "page": "options.html",
+        "open_in_tab": false
+      },
     "description": "View reddit threads for the page you're on.",
     "manifest_version": 2,
     "name": "Redditium",
     "author": "efskap",
     "permissions": [
         "https://www.reddit.com/",
-        "tabs"
+        "tabs",
+        "storage"
     ],
-     "icons": {
-    "128": "alien.png"
-  },
-    "version": "1.1.7"
+    "icons": {
+        "128": "alien.png"
+    },
+    "version": "1.1.9"
 }

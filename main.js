@@ -12,37 +12,40 @@
   function jreq(url, f, onError, depth) {
       var xhr = new XMLHttpRequest();
       try {
-          /*xhr.onreadystatechange =*/
           function processData() {
               if (xhr.readyState === 4) {
                   var text = xhr.responseText;
-                  if (text == "{error: 500}") {
-                      if (depth >= 5) {
-                          onError("error 500 for " + url + '. Gave up after ' + depth + ' tries.');
-                          return;
-                      }
-                      return jreq(url, f, onError, depth ? (depth + 1) : 1);
-                  }
                   var js = null;
                   try { // Needed because reddit returns raw html for strange urls (eg., : chrome://)
                       js = JSON.parse(text);
                   } catch (e) {
                       console.log("Expected JSON from:", url, "Instead got:", text);
                       onError("JSON.parse exception: " + e + "|" + text);
+                      return;
+                  }
+                  if (xhr.status != 200 || js.hasOwnProperty('error')) {
+                      var errcode = (xhr.status == 200 ? js.error : xhr.status);
+                      console.log('err ' + errcode + ', retrying.');
+                      if (depth >= 5) {
+                          onError('Error ' + errcode + " for " + url + '. Gave up after ' + depth + ' tries.', errcode);
+                          return;
+                      }
+                      new Promise(resolve => setTimeout(resolve, 10)).then(() => jreq(url, f, onError, depth ? (depth + 1) : 1)); //wait 10ms and retry
+                      return;
                   }
                   f(js);
               }
           };
-          xhr.onerror = function(err) {
+          xhr.onerror = function (err) {
               console.log("xhr error:", err);
-              onError("xhr error: " + e);
+              onError("xhr error: " + err);
           };
           xhr.open("GET", url, true);
           xhr.onload = processData;
           xhr.send(null);
       } catch (e) {
           console.log("Exception:", e);
-          onError("jreq exception: " + e);
+          onError("jreq exception: " + e, 'ERR');
       }
   }
 
@@ -97,11 +100,17 @@
           text: '...',
           tabId: tab.id
       });
+      chrome.browserAction.setBadgeBackgroundColor({
+          color: [0, 150, 255, 75]
+      });
 
-      function onError(text) {
+      function onError(text, msg = 'ERR') {
           console.error("Redditium|Error: " + text);
+          chrome.browserAction.setBadgeBackgroundColor({
+              color: [255, 81, 73, 100]
+          });
           chrome.browserAction.setBadgeText({
-              text: 'ERR',
+              text: msg,
               tabId: tab.id
           });
       }
@@ -112,18 +121,25 @@
       console.log("Redditium: URL = " + encoded_url);
       /** custom handlers go here **/
 
+
       if (domain == 'youtube.com') {
           var video_id = parse_youtube(new_url);
           if (video_id) {
-            console.log("Redditium: Searching by YouTube ID " + video_id + " instead of URL.");
+              console.log("Redditium: Searching by YouTube ID " + video_id + " instead of URL.");
               api_url = 'https://www.reddit.com/search.json?q=url:"' + video_id + '"+url:youtube.com+OR+url:youtu.be';
           }
-      }
-      else if (domain == 'imgur.com') {
+      } else if (domain == 'imgur.com') {
           var img_id = parse_imgur(new_url);
           if (img_id) {
-            console.log("Redditium: Searching by Imgur ID " + img_id + " instead of URL.");
+              console.log("Redditium: Searching by Imgur ID " + img_id + " instead of URL.");
               api_url = 'https://www.reddit.com/search.json?q=url:"' + img_id + '"+url:imgur.com';
+          }
+      } else if (domain === 'reddit.com') {
+          var m = /comments\/([^\/]*)/.exec(new_url);
+          if (m && m.length == 2) {
+              let rid = m[1];
+              console.log("Redditium: Searching by reddit ID " + rid + " instead of URL.");
+              api_url = 'https://www.reddit.com/search.json?q=url:"' + rid + '"+url:reddit.com';
           }
       }
       console.log("Redditium: Requesting " + api_url);
@@ -134,9 +150,10 @@
               onError("Error, js kind is: " + js.kind);
               console.log("Error, js kind is: " + js.kind);
           }
+          console.log(js.data.children.length + ' listings returned for ' + encoded_url);
           // filter out any false matches caused by reddit's search being case insensitive
           if (domain == 'imgur.com') {
-              js.data.children = js.data.children.filter(function(el) {
+              js.data.children = js.data.children.filter(function (el) {
                   var id = parse_imgur(el.data.url);
                   if (id) {
                       return id == img_id;
@@ -167,8 +184,8 @@
       }
   }
 
-  chrome.tabs.getAllInWindow(null, function(tabs) {
-      tabs.forEach(function(tab) {
+  chrome.tabs.getAllInWindow(null, function (tabs) {
+      tabs.forEach(function (tab) {
           checkTabUpdate(tab);
       });
   });
@@ -177,10 +194,10 @@
   chrome.browserAction.setBadgeBackgroundColor({
       color: [0, 150, 255, 75]
   });
-   // Called when the url of a tab changes.
+  // Called when the url of a tab changes.
   function checkForValidUrl(tabId, changeInfo, tab) {
-      checkTabUpdate(tab);
+        checkTabUpdate(tab);
   };
 
-   // Listen for any changes to the URL of any tab.
+  // Listen for any changes to the URL of any tab.
   chrome.tabs.onUpdated.addListener(checkForValidUrl);

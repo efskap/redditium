@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Redditium Options</title>
+    <style>
+        body.dark {
+            background: #262626;
+        }
+        .dark{
+            color: #eee;
+        }
+        div {
+            margin: 1em;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="option">
+        Sort by:
+        <select id="sort">
+            <option value="score">Score</option>
+            <option value="comments">Comments</option>
+            <option value="date">Date</option>
+        </select>
+    </div>
+    <div class="option">
+    <label>
+        <input type="checkbox" id="dark"> Dark theme
+    </label>
+</div>
+    <div id="status"></div>
+    <button id="save">Save</button>
+
+    <script src="options.js"></script>
+</body>
+
+</html>
