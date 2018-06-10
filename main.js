@@ -143,7 +143,7 @@
           }
       }
       console.log("Redditium: Requesting " + api_url);
-      res = jreq(api_url + '&limit=100', processData, onError);
+      res = jreq(api_url + '&limit=1000', processData, onError);
 
       function processData(js) {
           if (js.kind != 'Listing') {
